@@ -1,15 +1,22 @@
 <template>
-  <div id="app">
-    <Header/>
+  <div>
+    <Header @updateUser="updateUser"/>
+    <List ref="listref"/>
   </div>
 </template>
 
 <script>
 import Header from './components/Header.vue'
+import List from './components/List.vue'
 
 export default {
   name: 'App',
-  components: { Header }
+  components: { Header, List },
+  methods: {
+    updateUser(user){
+      this.$refs.listref.newUser(user)
+    }
+  }
 }
 </script>
 
