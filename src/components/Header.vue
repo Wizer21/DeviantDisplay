@@ -26,6 +26,7 @@ export default {
 #header
 {
   width: 100vw;
+  overflow: hidden;
   background-color: #1a1a1a;
 
   display: flex;

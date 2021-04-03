@@ -38,6 +38,7 @@ body
 }
 #app
 {
+  position: relative;
   overflow: hidden;
 }
 </style>

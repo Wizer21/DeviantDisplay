@@ -1,7 +1,7 @@
 <template>
   <div id="list">
     <div id="deviation_list">        
-      <div v-for="item in deviationList" :key="item.id" class="item_data" :data-name="item.title" :data-src="item.src">
+      <div v-for="item in deviationList" :key="item.id" class="item_data" :data-name="item.title" :data-src="item.src" :data-id="item.id">
         <p>
           {{ item.title }}
         </p>
@@ -20,10 +20,13 @@ export default {
     return {
       deviationList: [],
       offset: 0,
-      username: null
+      username: null,
+      lastItem: null,
+      imageYDegrees: 0
     }
   },
   methods: {
+    // New user Selected
     newUser(username){
       this.username = username
       this.offset = 0
@@ -31,6 +34,7 @@ export default {
 
       this.newRequest()
     },
+    // Request 60 next deviations
     newRequest(){
       let local = this
       this.request('GET', `https://backend.deviantart.com/rss.xml?q=gallery%3A${this.username}&offset=${this.offset}`)
@@ -48,6 +52,7 @@ export default {
         xhr.send();
       });
     },
+    // Push deviations to the data
     pushList(deviations){
       for (let dev of deviations){
         this.deviationList.push({
@@ -58,25 +63,47 @@ export default {
         this.offset++
       }
 
-
       setTimeout(() => {
         let stack = document.getElementsByClassName('item_data')
-        const floating_image = document.getElementById('floating_image')
         for (let item of stack){
           item.addEventListener('mouseenter', () => {
-            //console.log(item.dataset.src);
-            floating_image.src = item.dataset.src
+            this.newElemHover(item)
+          }),
+          item.addEventListener('mousemove', event => {
+            this.imageYAnimation(item, event)
           })
         }
       }, 500)
-    },    
+    },  
+    // Animation in MouseHover
+    newElemHover(newElem){
+      const floating_image = document.getElementById('floating_image')
+      floating_image.style.transform = "scale(0)"
+
+      setTimeout(() => {
+        if (this.lastItem){
+          this.lastItem.style.zIndex = "1"
+        }      
+        floating_image.src = newElem.dataset.src
+        newElem.style.zIndex = "3"
+
+        floating_image.style.transform = "scale(1)"
+        this.lastItem = newElem
+      }, 200)
+    },
+    // Animation in MouseMove
+    imageYAnimation(item, event) {   
+      let itemRect = item.getBoundingClientRect()
+      let itemHeightOffset = itemRect.height / 2
+
+      this.imageYDegrees = (event.offsetY - itemHeightOffset)/ (itemHeightOffset / 20)
+    }
   },
   mounted() {
+    // Animation on Scroll
     const image_holder = document.getElementById('image_holder')
-    const floating_image = document.getElementById('floating_image')
 
     window.addEventListener('scroll', () => {
-      //console.log(window.pageYOffset);
       image_holder.style.top = `${window.pageYOffset + (window.innerHeight / 2)}px`
 
       let stack = document.getElementsByClassName('item_data')
@@ -85,14 +112,45 @@ export default {
       for (let elem of stack){
         let rect = elem.getBoundingClientRect()
         if (rect.top < center && rect.bottom > center){
-          floating_image.src = elem.dataset.src
+          if (!this.lastItem || elem.dataset.id != this.lastItem.dataset.id){
+            this.newElemHover(elem)
+          }
           break
         }
       }
     })
+    // X MouseMove Animation
     document.body.addEventListener('mousemove', event => {
-      console.log('move');
-    image_holder.style.top = `${event.pageY}px`
+      // Image X Rotation
+      image_holder.style.top = `${event.pageY}px`
+      image_holder.style.left = `${event.pageX}px`
+
+      let x_pos = event.pageX - window.innerWidth / 2
+      let x_inAngle = x_pos / ((window.innerWidth / 2)/30)
+      
+      image_holder.style.transform = `perspective(300px) rotateY(${-x_inAngle}deg) rotateX(${this.imageYDegrees}deg)`
+
+      // Image perspective width
+      let width = (window.innerWidth/100) * 30
+      let degrees = x_inAngle
+      if (degrees < 0){
+        degrees = -degrees
+      }
+
+      let new_width = 100 - (degrees / (90 / 100))
+
+      image_holder.style.width = `${(width/100) * new_width}px`
+
+      // Image perspective height
+      let height = (window.innerWidth/100) * 30
+      degrees = this.imageYDegrees
+      if (degrees < 0){
+        degrees = -degrees
+      }
+
+      let new_height = 100 - (degrees / (90 / 100))
+
+      image_holder.style.height = `${(height/100) * new_height}px`
     })
   }
 }
@@ -122,6 +180,7 @@ export default {
 .item_data p 
 {
   margin: 0.5em;
+  mix-blend-mode: difference;
 }
 #image_holder
 {
@@ -129,15 +188,19 @@ export default {
   height: 30vw;
   width: 30vw;
   margin: -15vw;
-  background-color: aquamarine;
 
   transition-duration: 300ms;
   transition-timing-function: ease-out;
+  pointer-events: none;
+  z-index: 2;
 }
 #floating_image
 {
   height: 100%;
   width: 100%;
   object-fit: contain;
+  transition-duration: 200ms;
+
+  transform: scale(0);
 }
 </style>
