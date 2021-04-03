@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import { createRequest } from "../assets/requester.js"
 export default {
   name: 'List',
   data(){
@@ -22,7 +23,10 @@ export default {
       offset: 0,
       username: null,
       lastItem: null,
-      imageYDegrees: 0
+      requestLoading: false,
+      imageYDegrees: 0,
+      fullGaleryLoaded: false,
+
     }
   },
   methods: {
@@ -30,30 +34,27 @@ export default {
     newUser(username){
       this.username = username
       this.offset = 0
-      this.deviationList = [],
+      this.deviationList = []
+      this.imageYDegrees = false
+      this.fullGaleryLoaded = false
 
       this.newRequest()
     },
     // Request 60 next deviations
     newRequest(){
-      let local = this
-      this.request('GET', `https://backend.deviantart.com/rss.xml?q=gallery%3A${this.username}&offset=${this.offset}`)
-      .then(function (e) {
-        const parser = new DOMParser()
-        local.pushList(parser.parseFromString(e.target.response,"text/xml").getRootNode().getElementsByTagName('item'))
-      })
-    },
-    request(method, url) {
-      return new Promise(function (resolve, reject) {
-        var xhr = new XMLHttpRequest();
-        xhr.open(method, url);
-        xhr.onload = resolve;
-        xhr.onerror = reject;
-        xhr.send();
-      });
+      if (!this.requestLoading && !this.fullGaleryLoaded){
+        this.requestLoading = true
+
+        createRequest(this.username, this.offset, this.pushList)
+      }
     },
     // Push deviations to the data
     pushList(deviations){
+
+      if (deviations.length < 60){        
+        this.fullGaleryLoaded = true
+      }
+
       for (let dev of deviations){
         this.deviationList.push({
           id: this.offset,
@@ -66,20 +67,22 @@ export default {
       setTimeout(() => {
         let stack = document.getElementsByClassName('item_data')
         for (let item of stack){
-          item.addEventListener('mouseenter', () => {
-            this.newElemHover(item)
-          }),
           item.addEventListener('mousemove', event => {
             this.imageYAnimation(item, event)
+
+            if (!this.lastItem || item.dataset.id != this.lastItem.dataset.id){
+              this.newElemHover(item)
+            }
           })
         }
       }, 500)
+
+      this.requestLoading = false
     },  
     // Animation in MouseHover
     newElemHover(newElem){
       const floating_image = document.getElementById('floating_image')
       floating_image.style.transform = "scale(0)"
-
       setTimeout(() => {
         if (this.lastItem){
           this.lastItem.style.zIndex = "1"
@@ -96,8 +99,8 @@ export default {
       let itemRect = item.getBoundingClientRect()
       let itemHeightOffset = itemRect.height / 2
 
-      this.imageYDegrees = (event.offsetY - itemHeightOffset)/ (itemHeightOffset / 20)
-    }
+      this.imageYDegrees = (event.offsetY - itemHeightOffset)/ (itemHeightOffset / 15)
+    },
   },
   mounted() {
     // Animation on Scroll
@@ -117,6 +120,10 @@ export default {
           }
           break
         }
+      }
+
+      if (window.pageYOffset + window.innerHeight > document.body.getBoundingClientRect().height - window.innerHeight/2 ){
+        this.newRequest()
       }
     })
     // X MouseMove Animation

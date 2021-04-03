@@ -1,20 +1,34 @@
 <template>
   <div>
     <Header @updateUser="updateUser"/>
-    <List ref="listref"/>
+    <List id="list" ref="listref"/>
+    <Scene3d id="scene" ref="sceneref"/>
   </div>
 </template>
 
 <script>
 import Header from './components/Header.vue'
 import List from './components/List.vue'
+import Scene3d from './components/Scene3d.vue'
 
 export default {
   name: 'App',
-  components: { Header, List },
+  components: { Header, List, Scene3d },
   methods: {
-    updateUser(user){
-      this.$refs.listref.newUser(user)
+    updateUser(user, projectListOpened){
+      let list = document.getElementById('list')
+      let scene = document.getElementById('scene')
+
+      if (projectListOpened){
+        list.style.display = "block"
+        scene.style.display = "none"
+        this.$refs.listref.newUser(user)
+      }
+      else{
+        list.style.display = "none"
+        scene.style.display = "block"
+        this.$refs.sceneref.newUser(user)
+      }
     }
   }
 }

@@ -5,18 +5,33 @@
     </h2>
     <div id="p2">
       <input type="text" id="user_name" placeholder="username" size="5">
-      <h2>' portfolio</h2>
+      <h2 @click="toggleProject" id="displayToggle">' project</h2>
     </div>
-    <p @click="updateUser">Search</p>
+    <p @click="updateUser">load</p>
   </div>
 </template>
 
 <script>
 export default {
   name: 'Header',
+  data(){
+    return {
+      projectListOpened: true
+    }
+  },
   methods: {
     updateUser(){
-      this.$emit('updateUser', document.getElementById('user_name').value)
+      this.$emit('updateUser', document.getElementById('user_name').value, this.projectListOpened)
+    },
+    toggleProject(){
+      if(this.projectListOpened){
+        this.projectListOpened = false
+        document.getElementById('displayToggle').textContent = "' scene"
+      }
+      else{        
+        this.projectListOpened = true
+        document.getElementById('displayToggle').textContent = "' projects"
+      }
     }
   }
 }
