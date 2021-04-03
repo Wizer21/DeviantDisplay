@@ -5,7 +5,7 @@
     </h2>
     <div id="p2">
       <input type="text" id="user_name" placeholder="username" size="5">
-      <h2 @click="toggleProject" id="displayToggle">' project</h2>
+      <h2 @click="toggleProject" id="displayToggle">'s project</h2>
     </div>
     <p @click="updateUser">load</p>
   </div>
@@ -26,11 +26,11 @@ export default {
     toggleProject(){
       if(this.projectListOpened){
         this.projectListOpened = false
-        document.getElementById('displayToggle').textContent = "' scene"
+        document.getElementById('displayToggle').textContent = "'s gallery"
       }
       else{        
         this.projectListOpened = true
-        document.getElementById('displayToggle').textContent = "' projects"
+        document.getElementById('displayToggle').textContent = "'s projects"
       }
     }
   }
