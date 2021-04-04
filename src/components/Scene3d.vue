@@ -6,7 +6,6 @@
 <script>
 import { createRequest } from "../assets/requester.js"
 import * as THREE from 'three';
-//import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default {
   name: 'Scene3d',
@@ -14,15 +13,25 @@ export default {
     return {
       offset: 0,
       username: null,
-      populate: null
+      populate: null,
+      meshStack: [],
+      scene: null
     }
   },
   methods: { 
     newUser(username){
-      this.username = username,
-      this.offset = 0,
-      this.deviationList = []
+      this.username = username
+      this.offset = 0
 
+      // Delete meshes
+      this.deviationList = []
+      for (let mesh of this.meshStack){
+        this.scene.remove(mesh);
+        mesh.geometry.dispose();
+        //mesh.material.dispose();
+        mesh = undefined;
+      }     
+      this.meshStack = []
       this.requestData()
     },
     requestData(){
@@ -31,7 +40,6 @@ export default {
     // Push deviations to the data
     pushList(deviations){
       for (let dev of deviations){
-        //console.log(dev)
         this.deviationList.push({
           id: this.offset,
           src: dev.querySelector('content').getAttribute('url'),
@@ -50,16 +58,17 @@ export default {
     }
   },
   mounted(){
-// --- Create Scene ---
+    // --- Create Scene ---
     const three_scene = document.getElementById('scene')
     const scene = new THREE.Scene()
+    this.scene = scene
 
     // Camera
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      100
+      40
     )
     camera.position.set(0, 5, 0)
 
@@ -73,6 +82,7 @@ export default {
       let xOffset = (2 * grid_count)/ 2
       let yOffset = (2 * grid_count)/ 2
 
+      let local = this
       for (let item of this.deviationList){
         // Calculate Item height
         let ratio = item.width / 2
@@ -81,10 +91,10 @@ export default {
         let height = parseFloat((item.height / ratio).toFixed(4))
         
         let geometry = new THREE.BoxGeometry( 2, 0.1, height)
-        //geometry.trnaslate
         let material_img = new THREE.MeshBasicMaterial( {transparent: true, map: loader.load(item.src)});
         let material = new THREE.MeshStandardMaterial({ color: 0xd4d4d4});
         let controller = new THREE.Mesh( geometry, [material, material, material_img, material, material, material] )
+        local.meshStack.push(controller)
         
         controller.position.set(x * 2.2 - xOffset, 0, y_pixelStack + (height/2) - yOffset)
 
@@ -108,8 +118,6 @@ export default {
     let renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setClearColor( 0x000000, 0 )
     three_scene.appendChild(renderer.domElement)
-
-    //new OrbitControls( camera, renderer.domElement );
 
     // Resize
     renderer.setSize(window.innerWidth, window.innerHeight)
@@ -215,6 +223,13 @@ export default {
       camera.position.z += (cameraPosition_z - camera.position.z) * 0.05
 
     }
+
+    // Resize Event
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight)
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+    });
   }
 }
 </script>
