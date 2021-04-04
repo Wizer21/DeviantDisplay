@@ -61,7 +61,7 @@ export default {
       0.1,
       100
     )
-    camera.position.set(5, 5, 5)
+    camera.position.set(0, 5, 0)
 
     // Populate
     this.populate = function() {
@@ -122,7 +122,9 @@ export default {
       }
       renderer.render(scene, camera)
     }
-    animate()
+    setTimeout(() => {
+      animate()
+    }, 2000)
 
     //Raycaster
     const raycaster = new THREE.Raycaster();
@@ -136,6 +138,7 @@ export default {
       raycaster.setFromCamera( mouse, camera )
 
       let intersects = raycaster.intersectObjects( scene.children )
+      // Item hover
       if (intersects.length > 0 ){
         if (!hoverItem || intersects[0].object.id != hoverItem.id){
 
@@ -153,12 +156,36 @@ export default {
           }, 100)
         }
       }
+      // No item hover, lo
+      else{        
+        for (let i = 0; i < 10; i++){
+          setTimeout(() => {
+            if (hoverItem){
+              hoverItem.position.y += -hoverItem.position.y * 0.1
+            }
+          }, i * 10)
+        }
+        setTimeout(() => {
+          hoverItem = null
+        }, 100)
+      }
     }
+
+    let cameraPosition_x = 0
+    let cameraPosition_z = 0
+    // Item click
+    three_scene.addEventListener('click', () => {
+      // If an item is hovered
+      if (hoverItem){
+        cameraPosition_x = hoverItem.position.x
+        cameraPosition_z = hoverItem.position.z
+      }
+    })
 
     //Navigation
     let rect = three_scene.getBoundingClientRect()
-    let camera_y = 0
-    let camera_x = -1.55
+    let cameraRotation_y = 0
+    let cameraRotation_x = -1.55
     three_scene.addEventListener('mousemove', event => {
       raycast(event)
       
@@ -166,20 +193,27 @@ export default {
       let y_percent = (event.offsetY - (rect.height/2))  / (rect.width / 3)
       
       // TOP | BOTTOM rotation
-      camera_y = -x_percent
+      cameraRotation_y = -x_percent
       
       // LEFT | RIGHT rotation
-      camera_x = -1.55 - y_percent
+      cameraRotation_x = -1.55 - y_percent
     })
     camera.rotation.y = 0
     camera.rotation.x = -1.55
-
+    
     function animateCamera(){
       // TOP | BOTTOM rotation
-      camera.rotation.y += (camera_y - camera.rotation.y) * 0.05
+      camera.rotation.y += (cameraRotation_y - camera.rotation.y) * 0.05
       
       // LEFT | RIGHT rotation
-      camera.rotation.x += (camera_x - camera.rotation.x) * 0.05
+      camera.rotation.x += (cameraRotation_x - camera.rotation.x) * 0.05
+
+      // CameraPosition X
+      camera.position.x += (cameraPosition_x - camera.position.x) * 0.05
+      
+      // CameraPosition Z
+      camera.position.z += (cameraPosition_z - camera.position.z) * 0.05
+
     }
   }
 }
