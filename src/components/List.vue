@@ -85,10 +85,10 @@ export default {
       floating_image.style.transform = "scale(0)"
       setTimeout(() => {
         if (this.lastItem){
-          this.lastItem.style.zIndex = "1"
+          this.lastItem.children[0].style.zIndex = "1"
         }      
         floating_image.src = newElem.dataset.src
-        newElem.style.zIndex = "3"
+        newElem.children[0].style.zIndex = "3"
 
         floating_image.style.transform = "scale(1)"
         this.lastItem = newElem
@@ -159,6 +159,14 @@ export default {
 
       image_holder.style.height = `${(height/100) * new_height}px`
     })
+    
+    // Hide the card while leaving the list
+    document.getElementById('list').addEventListener('mouseleave', () => {      
+      setTimeout(() => {
+        document.getElementById('floating_image').style.transform = "scale(0)"
+        this.lastItem = null
+      }, 200)
+    })
   }
 }
 </script>
@@ -175,6 +183,7 @@ export default {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
 }
 .item_data
 {
@@ -186,8 +195,10 @@ export default {
 }
 .item_data p 
 {
+  position: relative;
   margin: 0.5em;
   mix-blend-mode: difference;
+  pointer-events: none;
 }
 #image_holder
 {

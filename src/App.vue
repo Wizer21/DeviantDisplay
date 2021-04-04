@@ -23,11 +23,13 @@ export default {
         list.style.display = "block"
         scene.style.display = "none"
         this.$refs.listref.newUser(user)
+        this.$refs.sceneref.turnOff()
       }
       else{
         list.style.display = "none"
         scene.style.display = "block"
         this.$refs.sceneref.newUser(user)
+        this.$refs.sceneref.turnOn()
       }
     }
   }
@@ -54,5 +56,13 @@ body
 {
   position: relative;
   overflow: hidden;
+}
+#list
+{
+  display: none;
+}
+#scene
+{
+  display: none;
 }
 </style>

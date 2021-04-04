@@ -15,7 +15,9 @@ export default {
       username: null,
       populate: null,
       meshStack: [],
-      scene: null
+      scene: null,
+      sceneRunning: false,
+      startAnimation: null
     }
   },
   methods: { 
@@ -55,6 +57,13 @@ export default {
       else{
         this.requestData()
       }
+    },
+    turnOn() {
+      this.sceneRunning = true
+      this.startAnimation()
+    },
+    turnOff() {      
+      this.sceneRunning = false
     }
   },
   mounted(){
@@ -62,6 +71,7 @@ export default {
     const three_scene = document.getElementById('scene')
     const scene = new THREE.Scene()
     this.scene = scene
+    let local = this
 
     // Camera
     const camera = new THREE.PerspectiveCamera(
@@ -82,7 +92,6 @@ export default {
       let xOffset = (2 * grid_count)/ 2
       let yOffset = (2 * grid_count)/ 2
 
-      let local = this
       for (let item of this.deviationList){
         // Calculate Item height
         let ratio = item.width / 2
@@ -123,16 +132,14 @@ export default {
     renderer.setSize(window.innerWidth, window.innerHeight)
 
     const animate = function () {
-      requestAnimationFrame(animate)
+      if (local.sceneRunning){
+        requestAnimationFrame(animate)
 
-      if (camera){
         animateCamera()
+        renderer.render(scene, camera)
       }
-      renderer.render(scene, camera)
     }
-    setTimeout(() => {
-      animate()
-    }, 2000)
+    this.startAnimation = animate
 
     //Raycaster
     const raycaster = new THREE.Raycaster();
@@ -191,11 +198,11 @@ export default {
     })
 
     //Navigation
-    let rect = three_scene.getBoundingClientRect()
     let cameraRotation_y = 0
     let cameraRotation_x = -1.55
     three_scene.addEventListener('mousemove', event => {
       raycast(event)
+      let rect = three_scene.getBoundingClientRect()
       
       let x_percent = (event.offsetX - (rect.width/2))  / (rect.width / 2)
       let y_percent = (event.offsetY - (rect.height/2))  / (rect.width / 3)
@@ -211,17 +218,16 @@ export default {
     
     function animateCamera(){
       // TOP | BOTTOM rotation
-      camera.rotation.y += (cameraRotation_y - camera.rotation.y) * 0.05
+      camera.rotation.y += (cameraRotation_y - camera.rotation.y) * 0.03
       
       // LEFT | RIGHT rotation
-      camera.rotation.x += (cameraRotation_x - camera.rotation.x) * 0.05
+      camera.rotation.x += (cameraRotation_x - camera.rotation.x) * 0.03
 
       // CameraPosition X
-      camera.position.x += (cameraPosition_x - camera.position.x) * 0.05
+      camera.position.x += (cameraPosition_x - camera.position.x) * 0.03
       
       // CameraPosition Z
-      camera.position.z += (cameraPosition_z - camera.position.z) * 0.05
-
+      camera.position.z += (cameraPosition_z - camera.position.z) * 0.03
     }
 
     // Resize Event
