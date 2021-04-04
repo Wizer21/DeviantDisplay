@@ -138,19 +138,20 @@ export default {
       let intersects = raycaster.intersectObjects( scene.children )
       if (intersects.length > 0 ){
         if (!hoverItem || intersects[0].object.id != hoverItem.id){
-          console.log("NEW ITEM");
+
           for (let i = 0; i < 10; i++){
             setTimeout(() => {
+
               if (hoverItem){
-                hoverItem.position.y -= -hoverItem.position.y * 0.1
-                console.log("hoverItem.position.y", hoverItem.position.y)
+                hoverItem.position.y += -hoverItem.position.y * 0.1
               }
-              intersects[0].object.position.y += (1 - intersects[0].object.position.y) * 0.1
-              console.log("intersects[0].object.position.y", intersects[0].object.position.y)
+              intersects[0].object.position.y +=  (0.5 - intersects[0].object.position.y) * 0.1
             }, i * 10)
           }
+          setTimeout(() => {
+            hoverItem = intersects[0].object
+          }, 100)
         }
-        hoverItem = intersects[0].object
       }
     }
 
@@ -162,7 +163,7 @@ export default {
       raycast(event)
       
       let x_percent = (event.offsetX - (rect.width/2))  / (rect.width / 2)
-      let y_percent = (event.offsetY - (rect.height/2))  / (rect.width / 2)
+      let y_percent = (event.offsetY - (rect.height/2))  / (rect.width / 3)
       
       // TOP | BOTTOM rotation
       camera_y = -x_percent
