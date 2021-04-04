@@ -6,7 +6,7 @@
 <script>
 import { createRequest } from "../assets/requester.js"
 import * as THREE from 'three';
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+//import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 export default {
   name: 'Scene3d',
@@ -59,11 +59,9 @@ export default {
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      500
+      100
     )
     camera.position.set(5, 5, 5)
-    camera.rotation.y += 1
-    camera.rotation.x += -1
 
     // Populate
     this.populate = function() {
@@ -84,19 +82,10 @@ export default {
         
         let geometry = new THREE.BoxGeometry( 2, 0.1, height)
         //geometry.trnaslate
-        let material = new THREE.MeshBasicMaterial( {transparent: true, map: loader.load(item.src)});
-        let controller = new THREE.Mesh( geometry, material )
+        let material_img = new THREE.MeshBasicMaterial( {transparent: true, map: loader.load(item.src)});
+        let material = new THREE.MeshStandardMaterial({ color: 0xd4d4d4});
+        let controller = new THREE.Mesh( geometry, [material, material, material_img, material, material, material] )
         
-        console.log("-- NEW --");
-        console.log("item.width", item.width);
-        console.log("item.height", item.height);
-        console.log("width", 2);
-        console.log("height", height);
-
-        // Calculate Position
-        console.log("y_pixelStack", y_pixelStack)
-        console.log("x", x)
-        console.log("y", y)
         controller.position.set(x * 2.2 - xOffset, 0, y_pixelStack + (height/2) - yOffset)
 
         y += 1
@@ -113,25 +102,84 @@ export default {
     }
     
     // Light
-    const point_light = new THREE.AmbientLight( 0xffffff, 1, 100 )
-    scene.add( point_light )
+    scene.add( new THREE.AmbientLight( 0xffffff, 1, 100 ) )
 
     // Render
     let renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setClearColor( 0x000000, 0 )
     three_scene.appendChild(renderer.domElement)
 
-    new OrbitControls( camera, renderer.domElement );
+    //new OrbitControls( camera, renderer.domElement );
 
     // Resize
     renderer.setSize(window.innerWidth, window.innerHeight)
 
     const animate = function () {
       requestAnimationFrame(animate)
-      
+
+      if (camera){
+        animateCamera()
+      }
       renderer.render(scene, camera)
     }
     animate()
+
+    //Raycaster
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let hoverItem = null
+
+    function raycast ( e ) {
+      mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1
+      mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1
+
+      raycaster.setFromCamera( mouse, camera )
+
+      let intersects = raycaster.intersectObjects( scene.children )
+      if (intersects.length > 0 ){
+        if (!hoverItem || intersects[0].object.id != hoverItem.id){
+          console.log("NEW ITEM");
+          for (let i = 0; i < 10; i++){
+            setTimeout(() => {
+              if (hoverItem){
+                hoverItem.position.y -= -hoverItem.position.y * 0.1
+                console.log("hoverItem.position.y", hoverItem.position.y)
+              }
+              intersects[0].object.position.y += (1 - intersects[0].object.position.y) * 0.1
+              console.log("intersects[0].object.position.y", intersects[0].object.position.y)
+            }, i * 10)
+          }
+        }
+        hoverItem = intersects[0].object
+      }
+    }
+
+    //Navigation
+    let rect = three_scene.getBoundingClientRect()
+    let camera_y = 0
+    let camera_x = -1.55
+    three_scene.addEventListener('mousemove', event => {
+      raycast(event)
+      
+      let x_percent = (event.offsetX - (rect.width/2))  / (rect.width / 2)
+      let y_percent = (event.offsetY - (rect.height/2))  / (rect.width / 2)
+      
+      // TOP | BOTTOM rotation
+      camera_y = -x_percent
+      
+      // LEFT | RIGHT rotation
+      camera_x = -1.55 - y_percent
+    })
+    camera.rotation.y = 0
+    camera.rotation.x = -1.55
+
+    function animateCamera(){
+      // TOP | BOTTOM rotation
+      camera.rotation.y += (camera_y - camera.rotation.y) * 0.05
+      
+      // LEFT | RIGHT rotation
+      camera.rotation.x += (camera_x - camera.rotation.x) * 0.05
+    }
   }
 }
 </script>
