@@ -2,7 +2,7 @@
   <div>
     <Header @updateUser="updateUser"/>
     <List id="list" ref="listref"/>
-    <Scene3d id="scene" ref="sceneref"/>
+    <Scene3d id="scene3d" ref="sceneref"/>
   </div>
 </template>
 
@@ -17,7 +17,7 @@ export default {
   methods: {
     updateUser(user, projectListOpened){
       let list = document.getElementById('list')
-      let scene = document.getElementById('scene')
+      let scene = document.getElementById('scene3d')
 
       if (projectListOpened){
         list.style.display = "block"
@@ -61,7 +61,7 @@ body
 {
   display: none;
 }
-#scene
+#scene3d
 {
   display: none;
 }

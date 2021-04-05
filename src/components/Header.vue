@@ -56,7 +56,7 @@ export default {
           window.scrollTo(0, window.pageYOffset + (((header_height - window.pageYOffset) * 0.05) + 1));
           if (window.pageYOffset > header_height * 0.9999 || it > 100) clearInterval(int);
         }, 10);
-      }, 500)
+      }, 100)
     },
     toList(){
       this.projectListOpened = true

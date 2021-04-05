@@ -176,6 +176,7 @@ export default {
 {
   width: 100vw;
   background-color: rgb(19, 19, 19);
+  display: none;
 }
 #deviation_list
 {
