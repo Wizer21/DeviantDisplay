@@ -81,8 +81,9 @@ export default {
       else if(location == "list"){      
         this.callUser(userName, true) 
       }
-
+      
       document.getElementById('user_name').value = userName
+      this.$refs.headerref.inputUpdate()
     }
   }
 }

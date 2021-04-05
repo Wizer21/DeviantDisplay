@@ -22,7 +22,7 @@
       <div id="nav">
         <div id="top">
           <div class="arrow_holder">
-            <img :src="require('../assets/arrows/chevron-left.png')">
+            <img :src="require('../assets/arrows/chevron-up.png')">
           </div>
         </div>
         <div id="mid">
