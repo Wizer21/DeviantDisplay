@@ -258,10 +258,6 @@ export default {
   {
     border-bottom: 2px solid #00e59b;
   }
-  &:placeholder-shown
-  {
-    color: red;
-  }
 }
 #p2
 {
