@@ -2,10 +2,7 @@
   <div id="header">
     <div id="title_holder">
       <h2>
-        Deviant
-      </h2>
-      <h2>
-        Art
+        Deviant Art
       </h2>
       <h2 id="gallery">
         gallery
@@ -100,6 +97,7 @@ export default {
 {
   min-height: 100vh;
   width: 100vw;
+  height: 100vh;
   overflow: hidden;
   background-color: #1a1a1a;
 
@@ -112,11 +110,11 @@ export default {
 {
   margin: 0px;
   color: #00e59b;
-  font-size: 15vw;
-  margin: 5vw 0;
+  font-size: 15vh;
+  margin: 2vw 0;
 
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
@@ -130,7 +128,7 @@ export default {
 #title_holder h2
 {
   margin: 0vw 1vw;
-  line-height: 15vw;
+  line-height: 15vh;
 }
 #p1
 {
@@ -140,32 +138,16 @@ export default {
   flex-direction: row;
 
   color: #dddddd;
-  font-size: 8vw;
-  margin: 5vw 0;
+  font-size: 5vh;
+  margin: 10vh 0;
 }
 #p1 h2
 {
   margin: 0px;
 }
-#p2
-{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-
-  color: #2e2e2e;
-  font-size: 3vw;
-  margin: 5vw 0;
-}
-#p2 h2
-{
-  margin: 0vw 2vw;
-}
 #user_name
 {
-  font-size: 8vw;
-  height: 8vw;
+  font-size: 10vh;
   background-color: transparent;
   border: 0px solid transparent;
   outline: none;
@@ -184,6 +166,21 @@ export default {
     box-shadow:none;
   }
 }
+#p2
+{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+
+  color: #2e2e2e;
+  font-size: 1vw;
+  margin: 0;
+}
+#p2 h2
+{
+  margin: 0vw 0vw;
+}
 #buttons
 {
   display: flex;
@@ -191,14 +188,14 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: flex-end;
-  font-size: 5vw;
+  font-size: 4vh;
 }
 #buttons h2
 {
   margin: 0vw 2vw;
   cursor: pointer;
   transition-timing-function: ease-in-out;
-  padding: 1vw;
+  padding: 1vh;
   border-radius: 20px;
 
   transition: background-color 250ms, color 500ms, transform 500ms, text-shadow 500ms;
@@ -209,7 +206,7 @@ export default {
 }
 #load
 {
-  font-size: 5vw;
+  font-size: 4vh;
   margin: 0 10vw;
   color: #00e59b;
   cursor: pointer;
@@ -230,6 +227,26 @@ export default {
 }
 #arrow
 {
-  transform: rotate(90deg) translateX(5vw);
+  transform: rotate(90deg) translateX(5vh);
+}
+@media screen and (max-width: 1400px) {  
+  #title_holder
+  {
+    font-size: 12vw;
+  }
+  #title_holder h2
+  {
+    line-height: 10vw;
+  }
+}
+@media screen and (max-width: 1000px) {  
+  #p1
+  {    
+    font-size: 5vw;
+  }
+  #user_name
+  {    
+    font-size: 10vw;
+  }
 }
 </style>

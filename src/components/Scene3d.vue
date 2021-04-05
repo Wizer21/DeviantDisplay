@@ -558,8 +558,9 @@ export default {
   background-color: rgb(38, 38, 38, 0.7);
   border-radius: 10px;
   margin: 1vw;
+  font-size: 1 .5vw;
 }
-@media screen and (max-width: 1000px) {  
+@media screen and (max-width: 1600px) {  
   #loader
   {  
     font-size: 1.5em;
