@@ -9,8 +9,24 @@
       </h2>
     </div>
     <div id="p1">
-      <input type="text" id="user_name" placeholder="username" size="8" spellcheck="false">
+      <input type="text" id="user_name" placeholder="username" size="8" spellcheck="false" @keydown="inputUpdate">
       <h2>'s profile</h2>
+    </div>
+    <div id="direct_link_button" @click="clipboard">
+      <div id="link_button">
+        <p>
+          Copy direct link
+        </p>
+      </div>
+      <div id="clipData">
+        <p id="username">
+        </p>
+        <p id="mode">
+        </p>
+        <div id="validate">
+          <p>Copied !</p>
+        </div>
+      </div>
     </div>
     <div id="p2">
       <div id="buttons">
@@ -38,22 +54,13 @@ export default {
   name: 'Header',
   data(){
     return {
-      projectListOpened: true
+      projectListOpened: true,
+      userEntered: false
     }
   },
   methods: {
     updateUser(){
-      this.$emit('updateUser', document.getElementById('user_name').value, this.projectListOpened)
-      
-      let header_height = document.getElementById('header').getBoundingClientRect().height
-      setTimeout(() => {
-        let it = 0
-        var int = setInterval(function() {
-          it += 1
-          window.scrollTo(0, window.pageYOffset + (((header_height - window.pageYOffset) * 0.08) + 1))
-          if (window.pageYOffset > header_height * 0.9999 || it > 150) clearInterval(int)
-        }, 10);
-      }, 100)
+      this.$emit('callUser', document.getElementById('user_name').value, this.projectListOpened)
     },
     toList(){
       this.projectListOpened = true
@@ -84,10 +91,81 @@ export default {
       listButton.style.color = "#333333"
       listButton.style.transform = "scale(1)"
       listButton.style.textShadow = ""
+    },
+    updateUserExist(bool){
+      let user_name = document.getElementById('user_name')
+      if (!bool){
+        user_name.style.color = "#ef5350"
+      }
+    },
+    clipboard(){
+      if (this.userEntered){
+        let valid = document.getElementById('validate')
+        let username = document.getElementById('username')
+        let mode = document.getElementById('mode')
+
+        valid.style.transform = "translateX(0vh)"
+        username.style.transform = "translateX(-100vw)"
+        mode.style.transform = "translateX(-100vw)"
+        
+        let url = new URL(window.location.href)
+        url.searchParams.append("n", document.getElementById('user_name').value)
+        if (this.projectListOpened){
+          url.searchParams.append("l", "list")
+        }
+        else{          
+          url.searchParams.append("l", "3d")
+        }
+        navigator.clipboard.writeText(url)
+      }
+    },
+    inputUpdate(){      
+      let user_name = document.getElementById('user_name')
+      user_name.style.color = "#ffffff"
     }
   },
   mounted(){
     this.toList()
+
+    let direct_link_button = document.getElementById('direct_link_button')
+    let username = document.getElementById('username')
+    let mode = document.getElementById('mode')
+    let usernameInput = document.getElementById('user_name')
+    let clipData = document.getElementById('clipData')
+    let valid = document.getElementById('validate')
+
+    let link_buttonwidth = document.getElementById('link_button').getBoundingClientRect().width
+
+    direct_link_button.addEventListener('mouseenter', () => {
+      if (usernameInput.value == ""){
+        this.userEntered = false
+        username.textContent = "NoUser /"
+        username.style.color = "#ef5350"
+      }
+      else{  
+        this.userEntered = true      
+        username.textContent = usernameInput.value + " /"
+        username.style.color = "#ffffff"
+      }
+
+      if (this.projectListOpened){
+        mode.textContent = "List"        
+      }
+      else{        
+        mode.textContent = "3D"     
+      }
+
+      clipData.style.transform = `translateX(${link_buttonwidth}px)`
+      clipData.style.opacity = 1
+    })    
+    direct_link_button.addEventListener('mouseleave', () => {
+      clipData.style.transform = "translateX(0)"
+      clipData.style.opacity = 0
+      
+      valid.style.transform = "translateX(20vw)"
+      username.style.transform = "translateX(0vw)"
+      mode.style.transform = "translateX(0vw)"
+    })
   }
 }
 </script>
@@ -138,8 +216,8 @@ export default {
   flex-direction: row;
 
   color: #dddddd;
-  font-size: 5vh;
-  margin: 10vh 0;
+  font-size: 6vh;
+  margin-top: 10vh;
 }
 #p1 h2
 {
@@ -153,17 +231,18 @@ export default {
   outline: none;
   color: #8b8b8b;
   font-family: 'Lexend', sans-serif;
+  transition-duration: 500ms;
 
   &::placeholder{
-    color: #00e59b;
-  }
-  &:placeholder-shown
-  {
     color: #00e59b;
   }
   &:invalid 
   {
     box-shadow:none;
+  }
+  &:focus
+  {
+    border-bottom: 1px solid #00e59b;
   }
 }
 #p2
@@ -227,7 +306,63 @@ export default {
 }
 #arrow
 {
+  font-size: 5vh;
   transform: rotate(90deg) translateX(5vh);
+}
+#direct_link_button
+{
+  font-size: 4vh;
+  display: flex;
+  flex-direction: row;
+}
+#direct_link_button:hover #link_button
+{
+  box-shadow: 0 0 10px #07b87f;
+}
+#link_button
+{
+  background-color: #07b87f;
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 10px;
+  z-index: 2;
+  margin: 2vh 0;
+  transition-duration: 500ms;
+
+  display: flex;
+  align-items: center;
+}
+#link_button p 
+{
+  margin: 0;
+}
+#clipData
+{
+  background-color: #202020;
+  border-radius: 20px;
+  padding: 10px;
+  transition-duration: 500ms;
+  margin: 2vh 0;
+  opacity: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  overflow: hidden;
+}
+#clipData p 
+{
+  margin: 0;
+  margin-right: 1vw;
+  transition-duration: 300ms;
+}
+#validate
+{
+  position: absolute;
+  border-radius: 20px;
+  transition-duration: 300ms;
+  transform: translateX(20vw);
 }
 @media screen and (max-width: 1400px) {  
   #title_holder
@@ -242,7 +377,7 @@ export default {
 @media screen and (max-width: 1000px) {  
   #p1
   {    
-    font-size: 5vw;
+    font-size: 6vw;
   }
   #user_name
   {    

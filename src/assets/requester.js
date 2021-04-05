@@ -7,6 +7,14 @@ export function createRequest(username, offset, callBack){
   })  
 }
 
+export function checkUser(username, callBack){
+  request('GET', `https://backend.deviantart.com/rss.xml?q=gallery%3A${username}`)
+  .then(function (e) {
+    const parser = new DOMParser()
+    callBack(parser.parseFromString(e.target.response,"text/xml").getRootNode().querySelector('description'))
+  })  
+}
+
 function request(method, url) {
   return new Promise(function (resolve, reject) {
     var xhr = new XMLHttpRequest();
