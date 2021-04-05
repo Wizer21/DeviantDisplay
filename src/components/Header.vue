@@ -9,7 +9,7 @@
       </h2>
     </div>
     <div id="p1">
-      <input type="text" id="user_name" placeholder="username" size="8" spellcheck="false" @keydown="inputUpdate">
+      <input type="text" id="user_name" placeholder="username" size="8" spellcheck="false" @keyup="inputUpdate" autocomplete="off">
       <h2>'s profile</h2>
     </div>
     <div id="direct_link_button" @click="clipboard">
@@ -20,6 +20,9 @@
       </div>
       <div id="clipData">
         <p id="username">
+        </p>
+        <p>
+          /
         </p>
         <p id="mode">
         </p>
@@ -76,6 +79,10 @@ export default {
       sceneButton.style.color = "#333333"
       sceneButton.style.transform = "scale(1)"
       sceneButton.style.textShadow = ""
+
+      // Update CLipboard
+      let mode = document.getElementById('mode')
+      mode.textContent = "List"       
     },
     toScene(){      
       this.projectListOpened = false
@@ -91,6 +98,10 @@ export default {
       listButton.style.color = "#333333"
       listButton.style.transform = "scale(1)"
       listButton.style.textShadow = ""
+
+      // Update CLipboard
+      let mode = document.getElementById('mode')
+      mode.textContent = "3D"       
     },
     updateUserExist(bool){
       let user_name = document.getElementById('user_name')
@@ -101,61 +112,53 @@ export default {
     clipboard(){
       if (this.userEntered){
         let valid = document.getElementById('validate')
-        let username = document.getElementById('username')
-        let mode = document.getElementById('mode')
+        let text = document.querySelectorAll('#clipData >p')
+        console.log(text);
 
         valid.style.transform = "translateX(0vh)"
-        username.style.transform = "translateX(-100vw)"
-        mode.style.transform = "translateX(-100vw)"
+        for (let t of text){
+          t.style.transform = "translateX(-100vw)"
+        }
         
         let url = new URL(window.location.href)
         url.searchParams.append("n", document.getElementById('user_name').value)
         if (this.projectListOpened){
-          url.searchParams.append("l", "list")
+          url.searchParams.set("l", "list")
         }
         else{          
-          url.searchParams.append("l", "3d")
+          url.searchParams.set("l", "3d")
         }
         navigator.clipboard.writeText(url)
       }
     },
     inputUpdate(){      
       let user_name = document.getElementById('user_name')
+      let username = document.getElementById('username')
+
       user_name.style.color = "#ffffff"
+      if (user_name.value != ""){
+        username.textContent = user_name.value
+        username.style.color = "#ffffff"
+        this.userEntered = true    
+      }
+      else{
+        username.textContent = "NoUser"
+        username.style.color = "#ef5350"
+        this.userEntered = false
+      }
     }
   },
   mounted(){
     this.toList()
 
     let direct_link_button = document.getElementById('direct_link_button')
-    let username = document.getElementById('username')
     let mode = document.getElementById('mode')
-    let usernameInput = document.getElementById('user_name')
     let clipData = document.getElementById('clipData')
     let valid = document.getElementById('validate')
+    let username = document.getElementById('username')
 
-    let link_buttonwidth = document.getElementById('link_button').getBoundingClientRect().width
-
-    direct_link_button.addEventListener('mouseenter', () => {
-      if (usernameInput.value == ""){
-        this.userEntered = false
-        username.textContent = "NoUser /"
-        username.style.color = "#ef5350"
-      }
-      else{  
-        this.userEntered = true      
-        username.textContent = usernameInput.value + " /"
-        username.style.color = "#ffffff"
-      }
-
-      if (this.projectListOpened){
-        mode.textContent = "List"        
-      }
-      else{        
-        mode.textContent = "3D"     
-      }
-
-      clipData.style.transform = `translateX(${link_buttonwidth}px)`
+    direct_link_button.addEventListener('mouseover', () => {
+      clipData.style.transform = `translateX(${document.getElementById('link_button').getBoundingClientRect().width}px)`
       clipData.style.opacity = 1
     })    
     direct_link_button.addEventListener('mouseleave', () => {
@@ -165,6 +168,16 @@ export default {
       valid.style.transform = "translateX(20vw)"
       username.style.transform = "translateX(0vw)"
       mode.style.transform = "translateX(0vw)"
+    })
+    
+    username.textContent = "NoUser"
+    username.style.color = "#ef5350"
+    this.userEntered = false
+
+    document.getElementById('user_name').addEventListener('keypress', event => {
+      if(event.code == "NumpadEnter" || event.code == "Enter"){
+        this.updateUser()
+      }
     })
   }
 }
@@ -232,6 +245,7 @@ export default {
   color: #8b8b8b;
   font-family: 'Lexend', sans-serif;
   transition-duration: 500ms;
+  border-bottom: 2px solid transparent;
 
   &::placeholder{
     color: #00e59b;
@@ -242,7 +256,11 @@ export default {
   }
   &:focus
   {
-    border-bottom: 1px solid #00e59b;
+    border-bottom: 2px solid #00e59b;
+  }
+  &:placeholder-shown
+  {
+    color: red;
   }
 }
 #p2
@@ -353,8 +371,7 @@ export default {
 }
 #clipData p 
 {
-  margin: 0;
-  margin-right: 1vw;
+  margin: 0 0.5vw;
   transition-duration: 300ms;
 }
 #validate
