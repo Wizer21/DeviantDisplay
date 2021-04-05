@@ -6,6 +6,9 @@
 <script>
 import { createRequest } from "../assets/requester.js"
 import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 export default {
   name: 'Scene3d',
@@ -82,7 +85,13 @@ export default {
     )
     camera.position.set(0, 5, 0)
 
+    // Render
+    let renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setClearColor( 0x000000, 0 )
+    three_scene.appendChild(renderer.domElement)
+
     // Populate
+		const composer = new EffectComposer( renderer );
     this.populate = function() {
       const loader = new THREE.TextureLoader();
       let grid_count = Math.sqrt(this.offset).toFixed(0)
@@ -91,7 +100,12 @@ export default {
       let x = 0
       let xOffset = (2 * grid_count)/ 2
       let yOffset = (2 * grid_count)/ 2
-
+      
+      let color_stack =  ["ef9a9a", "ce93d8", "9fa8da", "81d4fa", "80cbc4", "c5e1a5", "fff59d", "ffcc80"]
+      function dice(min, max){
+        return Math.random() * (max - min) + min
+      }
+      
       for (let item of this.deviationList){
         // Calculate Item height
         let ratio = item.width / 2
@@ -100,8 +114,9 @@ export default {
         let height = parseFloat((item.height / ratio).toFixed(4))
         
         let geometry = new THREE.BoxGeometry( 2, 0.1, height)
-        let material_img = new THREE.MeshBasicMaterial( {transparent: true, map: loader.load(item.src)});
-        let material = new THREE.MeshStandardMaterial({ color: 0xd4d4d4});
+        let material_img = new THREE.MeshBasicMaterial( {transparent: true, map: loader.load(item.src)})
+
+        let material = new THREE.MeshStandardMaterial({ color: parseInt(`${color_stack[Math.round(dice(0, 7))]}`, 16) });
         let controller = new THREE.Mesh( geometry, [material, material, material_img, material, material, material] )
         local.meshStack.push(controller)
         
@@ -120,16 +135,23 @@ export default {
       }
     }
     
+    // Bloom pass
+    const renderScene = new RenderPass( scene, camera );
+
+    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 )
+    bloomPass.threshold = 0
+    bloomPass.strength = 0.15
+    bloomPass.radius = 0.2
+
+    composer.addPass( renderScene );
+    composer.addPass( bloomPass );
+
     // Light
     scene.add( new THREE.AmbientLight( 0xffffff, 1, 100 ) )
 
-    // Render
-    let renderer = new THREE.WebGLRenderer({ antialias: true })
-    renderer.setClearColor( 0x000000, 0 )
-    three_scene.appendChild(renderer.domElement)
-
     // Resize
     renderer.setSize(window.innerWidth, window.innerHeight)
+		composer.setSize(window.innerWidth, window.innerHeight);
 
     const animate = function () {
       if (local.sceneRunning){
@@ -137,6 +159,7 @@ export default {
 
         animateCamera()
         renderer.render(scene, camera)
+        composer.render()
       }
     }
     this.startAnimation = animate
@@ -216,6 +239,7 @@ export default {
     camera.rotation.y = 0
     camera.rotation.x = -1.55
     
+    let zoomUp = false
     function animateCamera(){
       // TOP | BOTTOM rotation
       camera.rotation.y += (cameraRotation_y - camera.rotation.y) * 0.03
@@ -228,6 +252,15 @@ export default {
       
       // CameraPosition Z
       camera.position.z += (cameraPosition_z - camera.position.z) * 0.03
+
+      if (zoomUp){
+        camera.zoom += (3 - camera.zoom) * 0.01
+        camera.updateProjectionMatrix()
+      }
+      else{
+        camera.zoom += (1 - camera.zoom) * 0.05
+        camera.updateProjectionMatrix()
+      }
     }
 
     // Resize Event
@@ -236,6 +269,18 @@ export default {
       camera.aspect = window.innerWidth / window.innerHeight
       camera.updateProjectionMatrix()
     });
+
+    // Zoom
+    window.addEventListener('keydown', event => {
+      if (event.key === ' ' || event.key === 'Spacebar'){
+        zoomUp = true
+      }
+    })
+    window.addEventListener('keyup', event => {
+      if (event.key === ' ' || event.key === 'Spacebar'){
+        zoomUp = false
+      }
+    })
   }
 }
 </script>

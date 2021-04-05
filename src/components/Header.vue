@@ -50,9 +50,11 @@ export default {
       
       let header_height = document.getElementById('header').getBoundingClientRect().height
       setTimeout(() => {
+        let it = 0
         var int = setInterval(function() {
+          it += 1
           window.scrollTo(0, window.pageYOffset + (((header_height - window.pageYOffset) * 0.05) + 1));
-          if (window.pageYOffset > header_height * 0.9999) clearInterval(int);
+          if (window.pageYOffset > header_height * 0.9999 || it > 100) clearInterval(int);
         }, 10);
       }, 500)
     },
@@ -214,6 +216,11 @@ export default {
 #load:hover p
 {
   text-shadow: 0 0 15px #07b87f;
+}
+#load:active p:nth-child(1)
+{
+  transition-duration: 50ms;
+  transform: scale(0.9);
 }
 #load p
 {
