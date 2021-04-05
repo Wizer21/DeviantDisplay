@@ -188,7 +188,6 @@ export default {
 {
   min-height: 100vh;
   width: 100vw;
-  height: 100vh;
   overflow: hidden;
   background-color: #1a1a1a;
 
