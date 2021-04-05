@@ -21,8 +21,7 @@
     <div id="control_panel">
       <div id="nav">
         <div id="top">
-          <div class="arrow_holder">
-            <img :src="require('../assets/arrows/chevron-up.png')">
+          <div class="arrow_holder" id="top_arrow">
           </div>
         </div>
         <div id="mid">
@@ -422,6 +421,10 @@ export default {
     zoom.addEventListener('touchend', () => {
       zoomUp = false
     })
+
+    // Set arrows
+    document.getElementById('top_arrow').style.background = `url(${require('../assets/arrows/chevron-up.png')}) no-repeat center`
+    document.getElementById('top_arrow').style.backgroundSize = "100% 100%"
   }
 }
 </script>
@@ -552,6 +555,7 @@ export default {
   height: 100%;
   width: 100%;
   object-fit: contain;
+  pointer-events: none;
 }
 #message
 {
