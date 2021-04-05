@@ -17,7 +17,37 @@
           found
         </p>
       </div>   
-    </div>  
+    </div>
+    <div id="control_panel">
+      <div id="nav">
+        <div id="top">
+          <div class="arrow_holder">
+            <img :src="require('../assets/arrows/chevron-up.png')">
+          </div>
+        </div>
+        <div id="mid">
+          <div class="arrow_holder">
+            <img :src="require('../assets/arrows/chevron-left.png')">
+          </div>
+          <div class="arrow_holder">
+            <img :src="require('../assets/arrows/chevron-right.png')">
+          </div>
+        </div>
+        <div id="bop">
+          <div class="arrow_holder">
+            <img :src="require('../assets/arrows/chevron-down.png')">
+          </div>
+        </div>
+      </div>
+      <div id="zoom">
+        <div id="zoom_holder">
+          <img :src="require('../assets/zoom.png')">
+        </div>
+      </div>
+    </div> 
+    <p id="message">
+      Spacebar: zoom
+    </p> 
     <div id="scene">
     </div>
   </div>
@@ -41,7 +71,8 @@ export default {
       scene: null,
       sceneRunning: false,
       startAnimation: null,
-      totalHeight: 0 
+      totalHeight: 0,
+      usingTouchScreen: null
     }
   },
   methods: { 
@@ -99,6 +130,12 @@ export default {
     }
   },
   mounted(){
+    // Check for TouchScreen
+    this.usingTouchScreen = 
+    ( 'ontouchstart' in window ) || 
+    ( navigator.maxTouchPoints > 0 ) ||
+    ( navigator.msMaxTouchPoints > 0 )
+
     // --- Create Scene ---
     const three_scene = document.getElementById('scene')
     const scene = new THREE.Scene()
@@ -155,7 +192,6 @@ export default {
         pixelStack += item.height
 
         if (columnSize < pixelStack){
-          console.log("pixelStack", pixelStack);
           pixelStack = 0
           y_Stack = 0
           x += 1
@@ -183,7 +219,7 @@ export default {
 
     // Resize
     renderer.setSize(window.innerWidth, window.innerHeight)
-		composer.setSize(window.innerWidth, window.innerHeight);
+		composer.setSize(window.innerWidth, window.innerHeight)
 
     const animate = function () {
       if (local.sceneRunning){
@@ -244,32 +280,47 @@ export default {
     let cameraPosition_x = 0
     let cameraPosition_z = 0
     // Item click
-    three_scene.addEventListener('click', () => {
+    three_scene.addEventListener('click', e => {
       // If an item is hovered
-      if (hoverItem){
-        cameraPosition_x = hoverItem.position.x
-        cameraPosition_z = hoverItem.position.z
-      }
+      mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1
+      mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1
+
+      raycaster.setFromCamera( mouse, camera )
+
+      let intersects = raycaster.intersectObjects( scene.children )
+      if (intersects.length > 0 ){
+        cameraPosition_x = intersects[0].object.position.x
+        cameraPosition_z = intersects[0].object.position.z
+      }      
     })
 
     //Navigation
     let cameraRotation_y = 0
     let cameraRotation_x = -1.55
-    three_scene.addEventListener('mousemove', event => {
-      raycast(event)
-      let rect = three_scene.getBoundingClientRect()
-      
-      let x_percent = (event.offsetX - (rect.width/2))  / (rect.width / 2)
-      let y_percent = (event.offsetY - (rect.height/2))  / (rect.width / 3)
+    three_scene.addEventListener('mousemove', event => {      
+      if (!this.usingTouchScreen){
+        raycast(event)
+        let rect = three_scene.getBoundingClientRect()
+        let x = event.offsetX - (rect.width/2)
+        let y = event.offsetY - (rect.height/2)
+
+        calculateCameraPos(x, y, rect.width, rect.height)   
+      }   
+    })
+
+    camera.rotation.y = 0
+    camera.rotation.x = -1.55
+
+    function calculateCameraPos(x, y, width, height){
+      let x_percent = x / (width / 2)
+      let y_percent = y / (height / 3)
       
       // TOP | BOTTOM rotation
       cameraRotation_y = -x_percent
       
       // LEFT | RIGHT rotation
       cameraRotation_x = -1.55 - y_percent
-    })
-    camera.rotation.y = 0
-    camera.rotation.x = -1.55
+    }
     
     let zoomUp = false
     function animateCamera(){
@@ -299,8 +350,10 @@ export default {
     window.addEventListener('resize', () => {
       renderer.setSize(window.innerWidth, window.innerHeight)
       camera.aspect = window.innerWidth / window.innerHeight
+      composer.setSize(window.innerWidth, window.innerHeight)
+
       camera.updateProjectionMatrix()
-    });
+    })
 
     // Zoom
     window.addEventListener('keydown', event => {
@@ -312,6 +365,62 @@ export default {
       if (event.key === ' ' || event.key === 'Spacebar'){
         zoomUp = false
       }
+    })
+
+    //Mobile nav
+    if (this.usingTouchScreen){
+      document.getElementById('control_panel').style.display = "flex"
+      document.getElementById('message').textContent = "Click: navigate"
+    }
+
+    let nav = document.getElementById('nav')
+    var scrollable = true;
+    var listener = function(e) {
+      if (! scrollable) {
+        e.preventDefault()
+      }
+    }
+
+    document.addEventListener('touchmove', listener, { passive:false });
+
+    nav.addEventListener('touchmove', event => {
+      scrollable = false
+
+      let rect = nav.getBoundingClientRect()
+      let x = event.changedTouches[0].clientX - rect.left
+      let y = event.changedTouches[0].clientY - rect.top
+
+      if (x > rect.width){
+        x = rect.width
+      } 
+      else if(x < 0){
+        x = 0
+      }
+
+      if (y > rect.height){
+        y = rect.height
+      }
+      else if(y < 0){
+        y = 0
+      }
+
+      x -= rect.width/2
+      y -= rect.height/2
+
+      calculateCameraPos(x, y, rect.width, rect.height)   
+    })
+    nav.addEventListener('touchend', () => {
+      console.log("dragend");
+      scrollable = true
+    })
+
+    // Zoom button
+    let zoom = document.getElementById('zoom')
+    zoom.addEventListener('touchstart', () => {
+      zoomUp = true
+    })
+    zoom.addEventListener('touchend', () => {
+      zoomUp = false
     })
   }
 }
@@ -341,6 +450,7 @@ export default {
   background-color: #262626;
   font-size: 3em;
   transition-duration: 500ms;
+  z-index: 3;
 
   display: flex;
   align-items: center;
@@ -369,5 +479,90 @@ export default {
 
   grid-column: 1;
   grid-row: 1;
+}
+/* Control panel */
+#control_panel
+{
+  position: absolute;
+  z-index: 2;
+  bottom: 0;
+  margin: 2vw;
+
+  width: 96vw;
+
+  display: none;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+
+}
+#nav
+{
+  height: 16vh;
+  width: 16vh;
+  margin: 0;
+  background-color: rgb(38, 38, 38, 0.7);
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+}
+#top{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+#mid{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+#bot{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.arrow_holder
+{
+  height: 4vh;
+  width: 4vh;
+}
+.arrow_holder img
+{
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+#zoom_holder
+{
+  height: 8vh;
+  width: 8vh;
+  padding: 2vw;
+
+  background-color: rgb(38, 38, 38, 0.7);
+  border-radius: 50%;
+}
+#zoom_holder img
+{
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+#message
+{
+  position: absolute;
+  padding: 5px;
+  background-color: rgb(38, 38, 38, 0.7);
+  border-radius: 10px;
+  margin: 1vw;
+}
+@media screen and (max-width: 1000px) {  
+  #loader
+  {  
+    font-size: 1.5em;
+  }
 }
 </style>

@@ -98,6 +98,7 @@ export default {
 <style lang="scss" scoped>
 #header
 {
+  min-height: 100vh;
   width: 100vw;
   overflow: hidden;
   background-color: #1a1a1a;
