@@ -25,8 +25,7 @@ export default {
       lastItem: null,
       requestLoading: false,
       imageYDegrees: 0,
-      fullGaleryLoaded: false,
-
+      fullGaleryLoaded: false
     }
   },
   methods: {
@@ -112,19 +111,26 @@ export default {
       let stack = document.getElementsByClassName('item_data')
       let center = window.innerHeight * 0.5
 
+      let itemFound = false
       for (let elem of stack){
         let rect = elem.getBoundingClientRect()
         if (rect.top < center && rect.bottom > center){
           if (!this.lastItem || elem.dataset.id != this.lastItem.dataset.id){
+            itemFound = true
             this.newElemHover(elem)
           }
           break
         }
       }
 
+      if (!itemFound){
+        hideImage()       
+      }
+
       if (window.pageYOffset + window.innerHeight > document.body.getBoundingClientRect().height - window.innerHeight/2 ){
         this.newRequest()
       }
+      
     })
     // X MouseMove Animation
     document.body.addEventListener('mousemove', event => {
@@ -138,7 +144,7 @@ export default {
       image_holder.style.transform = `perspective(300px) rotateY(${-x_inAngle}deg) rotateX(${this.imageYDegrees}deg)`
 
       // Image perspective width
-      let width = (window.innerWidth/100) * 30
+      let size = (window.innerHeight/100) * 50
       let degrees = x_inAngle
       if (degrees < 0){
         degrees = -degrees
@@ -146,10 +152,9 @@ export default {
 
       let new_width = 100 - (degrees / (90 / 100))
 
-      image_holder.style.width = `${(width/100) * new_width}px`
+      image_holder.style.width = `${(size/100) * new_width}px`
 
       // Image perspective height
-      let height = (window.innerWidth/100) * 30
       degrees = this.imageYDegrees
       if (degrees < 0){
         degrees = -degrees
@@ -157,15 +162,20 @@ export default {
 
       let new_height = 100 - (degrees / (90 / 100))
 
-      image_holder.style.height = `${(height/100) * new_height}px`
+      image_holder.style.height = `${(size/100) * new_height}px`      
     })
-    
-    // Hide the card while leaving the list
-    document.getElementById('list').addEventListener('mouseleave', () => {      
+
+    let local = this
+    function hideImage(){      
       setTimeout(() => {
         document.getElementById('floating_image').style.transform = "scale(0)"
-        this.lastItem = null
+        local.lastItem = null
       }, 200)
+    }
+    
+    // Hide the card while leaving the list
+    document.getElementById('list').addEventListener('mouseleave', () => {
+      hideImage()       
     })
   }
 }
@@ -200,13 +210,14 @@ export default {
   margin: 0.5em;
   mix-blend-mode: difference;
   pointer-events: none;
+  font-size: 5vh;
 }
 #image_holder
 {
   position: absolute;
-  height: 30vw;
-  width: 30vw;
-  margin: -15vw;
+  height: 50vh;
+  width: 50vh;
+  margin: -25vh;
 
   transition-duration: 300ms;
   transition-timing-function: ease-out;

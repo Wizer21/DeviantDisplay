@@ -486,15 +486,15 @@ export default {
   position: absolute;
   z-index: 2;
   bottom: 0;
-  margin: 2vw;
+  margin: 5vw;
 
-  width: 96vw;
+  width: 90vw;
 
   display: none;
   flex-direction: row;
   align-items: flex-end;
   justify-content: space-between;
-
+  pointer-events: none;
 }
 #nav
 {
@@ -508,6 +508,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   flex-direction: column;
+  pointer-events: all;
 }
 #top{
   width: 100%;
@@ -544,6 +545,7 @@ export default {
 
   background-color: rgb(38, 38, 38, 0.7);
   border-radius: 50%;
+  pointer-events: all;
 }
 #zoom_holder img
 {
@@ -559,6 +561,7 @@ export default {
   border-radius: 10px;
   margin: 1vw;
   font-size: 1 .5vw;
+  pointer-events: none;
 }
 @media screen and (max-width: 1600px) {  
   #loader

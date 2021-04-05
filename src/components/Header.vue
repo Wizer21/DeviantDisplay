@@ -50,8 +50,8 @@ export default {
         let it = 0
         var int = setInterval(function() {
           it += 1
-          window.scrollTo(0, window.pageYOffset + (((header_height - window.pageYOffset) * 0.05) + 1));
-          if (window.pageYOffset > header_height * 0.9999 || it > 100) clearInterval(int);
+          window.scrollTo(0, window.pageYOffset + (((header_height - window.pageYOffset) * 0.08) + 1))
+          if (window.pageYOffset > header_height * 0.9999 || it > 150) clearInterval(int)
         }, 10);
       }, 100)
     },
