@@ -49,8 +49,7 @@ export default {
     },
     // Push deviations to the data
     pushList(deviations){
-
-      if (deviations.length < 60){        
+        if (deviations.length < 60){        
         this.fullGaleryLoaded = true
       }
 
@@ -111,27 +110,21 @@ export default {
       let stack = document.getElementsByClassName('item_data')
       let center = window.innerHeight * 0.5
 
-      let itemFound = false
       for (let elem of stack){
         let rect = elem.getBoundingClientRect()
         if (rect.top < center && rect.bottom > center){
           if (!this.lastItem || elem.dataset.id != this.lastItem.dataset.id){
-            itemFound = true
             this.newElemHover(elem)
           }
           break
         }
       }
 
-      if (!itemFound){
-        hideImage()       
-      }
-
       if (window.pageYOffset + window.innerHeight > document.body.getBoundingClientRect().height - window.innerHeight/2 ){
         this.newRequest()
-      }
-      
+      }   
     })
+      
     // X MouseMove Animation
     document.body.addEventListener('mousemove', event => {
       // Image X Rotation

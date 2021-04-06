@@ -113,7 +113,6 @@ export default {
       if (this.userEntered){
         let valid = document.getElementById('validate')
         let text = document.querySelectorAll('#clipData >p')
-        console.log(text);
 
         valid.style.transform = "translateX(0vh)"
         for (let t of text){
@@ -327,6 +326,7 @@ export default {
   font-size: 4vh;
   display: flex;
   flex-direction: row;
+  cursor: pointer;
 }
 #direct_link_button:hover #link_button
 {
@@ -393,7 +393,7 @@ export default {
   }
   #user_name
   {    
-    font-size: 10vw;
+    font-size: 8vw;
   }
 }
 </style>
